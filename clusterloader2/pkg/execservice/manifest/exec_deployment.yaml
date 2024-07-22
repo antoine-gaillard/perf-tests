@@ -15,4 +15,23 @@ spec:
     spec:
       containers:
       - name: agnhost
-        image: registry.k8s.io/e2e-test-images/agnhost:2.32
+        image: registry.ddbuild.io/e2e-test-images/agnhost:2.32
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 100m
+            memory: 256Mi
+      tolerations:
+        - effect: NoSchedule
+          key: node
+          operator: Equal
+          value: nodeless
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/nodeless
+                operator: Exists
