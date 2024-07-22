@@ -145,7 +145,10 @@ func (f *Framework) CreateAutomanagedNamespaces(namespaceCount int, allowExistin
 	for i := 1; i <= namespaceCount; i++ {
 		name := fmt.Sprintf("%v-%d", f.automanagedNamespacePrefix, i)
 		if _, created := existingNamespaceSet[name]; !created {
-			if err := client.CreateNamespace(f.clientSets.GetClient(), name); err != nil {
+			if err := client.CreateNamespace(
+				f.clientSets.GetClient(),
+				name,
+				client.WithNamespaceAnnotations(map[string]string{"namespace-guard-validation.admission.datadoghq.com/allow-cascade-delete": "true"})); err != nil {
 				return err
 			}
 		} else {

@@ -82,7 +82,10 @@ func SetUpExecService(f *framework.Framework, _ config.ExecServiceConfig) error 
 	mapping["Name"] = execDeploymentName
 	mapping["Namespace"] = execDeploymentNamespace
 	mapping["Replicas"] = execPodReplicas
-	if err = client.CreateNamespace(f.GetClientSets().GetClient(), execDeploymentNamespace); err != nil {
+	if err = client.CreateNamespace(
+		f.GetClientSets().GetClient(),
+		execDeploymentNamespace,
+		client.WithNamespaceAnnotations(map[string]string{"namespace-guard-validation.admission.datadoghq.com/allow-cascade-delete": "true"})); err != nil {
 		return fmt.Errorf("namespace %s creation error: %v", execDeploymentNamespace, err)
 	}
 	if err = f.ApplyTemplatedManifests(

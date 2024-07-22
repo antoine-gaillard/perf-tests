@@ -194,10 +194,22 @@ func ListNodesWithOptions(c clientset.Interface, listOpts metav1.ListOptions) ([
 	return nodes, nil
 }
 
+type namespaceOptions func(namespace *apiv1.Namespace)
+
+func WithNamespaceAnnotations(annotations map[string]string) namespaceOptions {
+	return func(namespace *apiv1.Namespace) {
+		namespace.Annotations = annotations
+	}
+}
+
 // CreateNamespace creates a single namespace with given name.
-func CreateNamespace(c clientset.Interface, namespace string) error {
+func CreateNamespace(c clientset.Interface, namespace string, opts ...namespaceOptions) error {
 	createFunc := func() error {
-		_, err := c.CoreV1().Namespaces().Create(context.TODO(), &apiv1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: namespace}}, metav1.CreateOptions{})
+		ns := &apiv1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: namespace}}
+		for _, o := range opts {
+			o(ns)
+		}
+		_, err := c.CoreV1().Namespaces().Create(context.TODO(), ns, metav1.CreateOptions{})
 		return err
 	}
 	return RetryWithExponentialBackOff(RetryFunction(createFunc, Allow(apierrs.IsAlreadyExists)))
