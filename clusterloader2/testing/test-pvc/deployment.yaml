@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{.Name}}
+  labels:
+    group: test-deployment
+spec:
+  replicas: {{.Replicas}}
+  selector:
+    matchLabels:
+      group: test-pod
+  template:
+    metadata:
+      labels:
+        group: test-pod
+    spec:
+      containers:
+      - image: registry.ddbuild.io/pause:3.6-dd1
+        name: {{.Name}}
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 100m
+            memory: 256Mi
+      tolerations:
+        - effect: NoSchedule
+          key: node
+          operator: Equal
+          value: nodeless
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/nodeless
+                operator: Exists
